@@ -55,3 +55,18 @@ const getAssetType = (quote) => {
     }
 };
 
+
+export const deleteAsset = async (symbol) => {
+    try{
+        const asset = await AssetModel.getBySymbol(symbol);
+        if (!asset) {
+            throw new Error('Asset not found');
+        }
+
+        await AssetModel.deleteBySymbol(symbol);
+    } catch (error) {
+        console.error(`Error deleting asset ${symbol}:`, error);
+        throw error;
+    }
+};
+

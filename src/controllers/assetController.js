@@ -1,4 +1,6 @@
-import { syncAssetInfo, getAllAssets, getAssetBySymbol } from "../services/assetService.js";
+
+import { syncAssetInfo, getAllAssets, getAssetBySymbol, deleteAsset  as deleteAssetService } from "../services/assetService.js";
+
 
 
 export const addAsset = async (req, res) => {
@@ -60,3 +62,20 @@ export const getAsset = async (req, res) => {
         });
     }
 }
+
+export const deleteAsset = async (req, res) => {
+    try{
+        const {symbol} = req.params;
+        await deleteAssetService(symbol);
+        res.json({
+            success: true,
+            message: 'Asset deleted successfully'
+        });
+    }  catch (error) {
+        res.status(404).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
