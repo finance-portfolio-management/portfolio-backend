@@ -32,6 +32,7 @@ export class AssetModel {
         return rows;
     }
 
+
     static async deleteBySymbol(symbol) {
         await db.execute(
             `DELETE FROM assets WHERE symbol = ?`, [symbol]);
