@@ -55,6 +55,7 @@ const getAssetType = (quote) => {
     }
 };
 
+
 export const deleteAsset = async (symbol) => {
     try{
         const asset = await AssetModel.getBySymbol(symbol);
@@ -67,4 +68,7 @@ export const deleteAsset = async (symbol) => {
         console.error(`Error deleting asset ${symbol}:`, error);
         throw error;
     }
+
 };
+
+

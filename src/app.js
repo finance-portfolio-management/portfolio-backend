@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 
 import assetsRoutes from './routes/assetRoutes.js';
-import { listAssets } from './controllers/assetController.js';
+
 
 dotenv.config();
 

@@ -1,3 +1,4 @@
+
 import { syncAssetInfo, getAllAssets, getAssetBySymbol, deleteAsset  as deleteAssetService } from "../services/assetService.js";
 
 
@@ -75,4 +76,7 @@ export const deleteAsset = async (req, res) => {
             error: error.message
         });
     }
+
 };
+
+
