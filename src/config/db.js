@@ -26,4 +26,5 @@ async function getConnection() {
 
 getConnection();
 
+
 export default pool;
