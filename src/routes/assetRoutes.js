@@ -12,7 +12,7 @@ router.get('/', listAssets);
 router.get('/:symbol', getAsset);
 
 
-router.delete('/:symbol', deleteAsset);
 
+router.delete('/:symbol', deleteAsset);
 
 export default router;

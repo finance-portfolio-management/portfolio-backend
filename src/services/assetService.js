@@ -68,5 +68,7 @@ export const deleteAsset = async (symbol) => {
         console.error(`Error deleting asset ${symbol}:`, error);
         throw error;
     }
+
 };
+
 
