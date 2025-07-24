@@ -31,4 +31,9 @@ export class AssetModel {
         const [rows] = await db.execute(`SELECT * FROM assets order by symbol`);
         return rows;
     }
+
+    static async deleteBySymbol(symbol) {
+        await db.execute(
+            `DELETE FROM assets WHERE symbol = ?`, [symbol]);
+    }
 }

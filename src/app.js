@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 
 
 import assetsRoutes from './routes/assetRoutes.js';
+import { listAssets } from './controllers/assetController.js';
 
 dotenv.config();
 
@@ -20,9 +21,21 @@ app.get('/', (req, res) => {
    res.json({
     message: 'Finance Portfolio Management API',
     endpoints: {
-        assets: '/api/assets',
+        addassets: 'POST /api/assets',
+        listAssets: 'GET /api/assets',
+        getAsset: 'GET /api/assets/:symbol',
+        deleteAsset: 'DELETE /api/assets/:symbol'
     }
 });
+});
+
+app.use((err, req, res, next) => {;
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        error: 'Internal Server Error'
+    }
+);
 });
 
 export default app;
