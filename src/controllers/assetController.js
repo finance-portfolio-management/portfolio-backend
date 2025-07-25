@@ -1,7 +1,9 @@
 
 import { syncAssetInfo, getAllAssets, getAssetBySymbol, deleteAsset  as deleteAssetService , updateAsset as 
-updateAssetService
+
+updateAssetService, getAssetHistoricalData, syncAssetHistoricalData
 } from "../services/assetService.js";
+
 
 
 export const addAsset = async (req, res) => {
@@ -97,4 +99,54 @@ export const updateAsset = async (req, res) => {
             error: error.message
         });
     }
+
 }
+
+export const getHistoricalData = async (req, res) => {
+    try {
+        const { symbol } = req.params;
+        const { start, end, interval } = req.query;
+        if(!start || !end) {
+            return res.status(400).json({
+                success: false,
+                error: 'Start and end dates are required'
+            });
+        }
+
+        const data = await getAssetHistoricalData(symbol, start, end, interval);
+        res.json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
+export const syncHistoricalData = async (req, res) => {
+    try {
+        const { symbol } = req.params;
+        const { start, end, interval } = req.body;
+        if(!start || !end) {
+            return res.status(400).json({
+                success: false,
+                error: 'Start and end dates are required'
+            });
+        }
+
+        await syncAssetHistoricalData(symbol, new Date(start), new Date(end), interval || '1d');
+        res.json({
+            success: true,
+            message: `Historical data for ${symbol} synced successfully`
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            error: error.message
+        });
+    }
+}
+

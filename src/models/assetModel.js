@@ -45,4 +45,5 @@ export class AssetModel {
             [name, type, exchange, symbol]
         );
     }
+
 }
