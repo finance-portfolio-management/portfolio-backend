@@ -72,3 +72,17 @@ export const deleteAsset = async (symbol) => {
 };
 
 
+export const updateAsset = async (symbol, data) => {
+    try{
+        const asset = await AssetModel.getBySymbol(symbol);
+        if (!asset) {
+            throw new Error('Asset not found');
+        }
+
+        await AssetModel.updateBySymbol(symbol, data);
+        return await AssetModel.getBySymbol(symbol);
+    } catch (error) {
+        console.error(`Error updating asset ${symbol}:`, error);
+        throw error;
+    }
+};

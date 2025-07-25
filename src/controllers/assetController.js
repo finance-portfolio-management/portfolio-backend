@@ -1,5 +1,7 @@
 
-import { syncAssetInfo, getAllAssets, getAssetBySymbol, deleteAsset  as deleteAssetService } from "../services/assetService.js";
+import { syncAssetInfo, getAllAssets, getAssetBySymbol, deleteAsset  as deleteAssetService , updateAsset as 
+updateAssetService
+} from "../services/assetService.js";
 
 
 export const addAsset = async (req, res) => {
@@ -80,3 +82,19 @@ export const deleteAsset = async (req, res) => {
 };
 
 
+export const updateAsset = async (req, res) => {
+    try{
+        const {symbol} = req.params;
+        const data = req.body;
+        
+        const updatedAsset = await updateAssetService(symbol, data);
+        res.json({            success: true,
+            data: updatedAsset
+        });
+    }   catch (error) {
+        res.status(404).json({
+            success: false,
+            error: error.message
+        });
+    }
+}

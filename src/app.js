@@ -24,7 +24,8 @@ app.get('/', (req, res) => {
         addassets: 'POST /api/assets',
         listAssets: 'GET /api/assets',
         getAsset: 'GET /api/assets/:symbol',
-        deleteAsset: 'DELETE /api/assets/:symbol'
+        deleteAsset: 'DELETE /api/assets/:symbol',
+        updateAsset: 'PUT /api/assets/:symbol'
     }
 });
 });

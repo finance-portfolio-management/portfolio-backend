@@ -37,4 +37,12 @@ export class AssetModel {
         await db.execute(
             `DELETE FROM assets WHERE symbol = ?`, [symbol]);
     }
+
+    static async updateBySymbol(symbol, data) {
+        const { name, type, exchange } = data;
+        await db.execute(
+            `UPDATE assets SET name = ?, type = ?, exchange = ? WHERE symbol = ?`,
+            [name, type, exchange, symbol]
+        );
+    }
 }
