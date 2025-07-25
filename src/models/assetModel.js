@@ -3,21 +3,22 @@ import db from '../config/db.js';
 export class AssetModel {
 
     static async createOrUpdateAsset(asset) {
-        const { symbol, name, type, exchange} = asset;
+        const { symbol, name, type, exchange, current_price, price_updated_at} = asset;
+        const sql = `
+            INSERT INTO assets (symbol, name, type, exchange, current_price, price_updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                name = VALUES(name),
+                type = VALUES(type),
+                exchange = VALUES(exchange),
+                current_price = VALUES(current_price),
+                price_updated_at = VALUES(price_updated_at)
+        `;
         const [result] = await db.execute(
-            `INSERT INTO assets (symbol, name, type, exchange)
-             VALUES (?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE
-             name = ?, type = ?, exchange = ?`,
-            [symbol, name, type, exchange, name, type, exchange]
+           sql,
+            [symbol, name, type, exchange, current_price, price_updated_at]
         );
-        if (result.insertId){
-            return result.insertId;
-        }else {
-            const [rows] = await db.execute(
-                `SELECT id FROM assets WHERE symbol = ?`, [symbol]);
-            return rows[0].id;
-        }
+        return result.insertId ? result.insertId :await this.getBySymbol(symbol);
     }
 
 
@@ -46,4 +47,6 @@ export class AssetModel {
         );
     }
 
+
+    
 }
