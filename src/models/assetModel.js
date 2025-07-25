@@ -46,16 +46,4 @@ export class AssetModel {
         );
     }
 
-
-    static async getHistoricalData(assetId, startDate, endDate, interval = '1d') {
-        const [rows] = await db.execute(
-           `select DATE_FORMAT(date, '%Y-%m-%d') as date,
-            open, high, low, close, volume
-            from historical_data
-            where asset_id = ? and date_time between ? and ? and interval_type = ?
-            order by date_time ASC`,
-            [assetId, startDate, endDate, interval]
-        );
-        return rows;
-    }
 }

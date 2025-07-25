@@ -86,6 +86,7 @@ export const updateAsset = async (symbol, data) => {
         console.error(`Error updating asset ${symbol}:`, error);
         throw error;
     }
+
 };
 
 export const syncAssetHistoricalData = async (symbol, startDate, endDate, interval = '1d') => {
@@ -132,3 +133,5 @@ export const getAssetHistoricalData = async (symbol, startDate, endDate, interva
         throw error;
     }
 };
+
+

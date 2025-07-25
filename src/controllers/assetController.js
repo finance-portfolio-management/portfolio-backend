@@ -1,5 +1,6 @@
 
 import { syncAssetInfo, getAllAssets, getAssetBySymbol, deleteAsset  as deleteAssetService , updateAsset as 
+
 updateAssetService, getAssetHistoricalData, syncAssetHistoricalData
 } from "../services/assetService.js";
 
@@ -98,6 +99,7 @@ export const updateAsset = async (req, res) => {
             error: error.message
         });
     }
+
 }
 
 export const getHistoricalData = async (req, res) => {
