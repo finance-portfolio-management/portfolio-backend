@@ -37,4 +37,25 @@ export class AssetModel {
         await db.execute(
             `DELETE FROM assets WHERE symbol = ?`, [symbol]);
     }
+
+    static async updateBySymbol(symbol, data) {
+        const { name, type, exchange } = data;
+        await db.execute(
+            `UPDATE assets SET name = ?, type = ?, exchange = ? WHERE symbol = ?`,
+            [name, type, exchange, symbol]
+        );
+    }
+
+
+    static async getHistoricalData(assetId, startDate, endDate, interval = '1d') {
+        const [rows] = await db.execute(
+           `select DATE_FORMAT(date, '%Y-%m-%d') as date,
+            open, high, low, close, volume
+            from historical_data
+            where asset_id = ? and date_time between ? and ? and interval_type = ?
+            order by date_time ASC`,
+            [assetId, startDate, endDate, interval]
+        );
+        return rows;
+    }
 }
