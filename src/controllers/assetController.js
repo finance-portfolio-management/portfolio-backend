@@ -18,7 +18,15 @@ export const addAsset = async (req, res) => {
         const asset = await syncAssetInfo(symbol);
         return res.status(201).json({
             success: true,
-            data: asset
+            data: {
+                id: asset.id,
+                symbol: asset.symbol,
+                name: asset.name,
+                type: asset.type,
+                exchange: asset.exchange,
+                current_price: asset.current_price,
+                price_updated_at: asset.price_updated_at
+            }
         });
     } catch (error) {
        res.status(500).json({

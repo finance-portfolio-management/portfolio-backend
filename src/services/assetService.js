@@ -3,24 +3,40 @@ import yahooFinance from "yahoo-finance2";
 import { HistoricalModel } from "../models/historicalModel.js";
 
 export const syncAssetInfo = async (symbol) => {
-    try{
-        const quote = await yahooFinance.quote(symbol);
+    try {
+      const quote = await yahooFinance.quote(symbol);
+      if (!quote) throw new Error(` ${symbol} not found`);
+  
+      const currentPrice = 
+        quote.regularMarketPrice !== undefined ? quote.regularMarketPrice :
+        quote.marketPrice !== undefined ? quote.marketPrice :
+        quote.price?.regularMarketPrice !== undefined ? quote.price.regularMarketPrice : null;
+  
+ 
+      const type = getAssetType(quote);
+  
+ 
+      const assetInfo = {
+        symbol: quote.symbol,
+        name: quote.longName || quote.shortName || symbol,
+        type,
+        exchange: quote.exchange || '',
+        current_price: currentPrice !== null ? parseFloat(currentPrice.toFixed(4)) : null,
+        price_updated_at: new Date() 
+      };
+  
 
-        const asserInfo = {
-            symbol: quote.symbol,
-            name: quote.longName || quote.shortName || symbol,
-            type: getAssetType(quote),
-            exchange: quote.exchange
-    };
-
-    const assetId = await AssetModel.createOrUpdateAsset(asserInfo);
-
-    return { assetId, ...asserInfo };
+      console.log(`prepare to save:`, assetInfo);
+  
+  
+      const assetId = await AssetModel.createOrUpdateAsset(assetInfo);
+  
+      return { assetId, ...assetInfo };
     } catch (error) {
-        console.error(`Error syncing asset info for ${symbol}:`, error);
-        throw error;
-    };
-};
+      console.error(`Failed to synchronize assets ${error.message}`);
+      throw error;
+    }
+  };
 
 export const getAllAssets = async () => {
     try {
@@ -42,10 +58,10 @@ export const getAssetBySymbol = async (symbol) => {
 };
 
 const getAssetType = (quote) => {
-    // 关键修改：使用 quote.quoteType 而非 quote.type
+
     const quoteType = quote.quoteType || quote.type || '';
     
-    switch (quoteType.toUpperCase()) { // 确保大写比较
+    switch (quoteType.toUpperCase()) { 
       case 'EQUITY':
         return 'Stock';
       case 'CRYPTOCURRENCY':
@@ -63,7 +79,7 @@ const getAssetType = (quote) => {
       case 'CURRENCY':
         return 'Currency';
       default:
-        console.log(`Undefined: ${quoteType}， defaulting to Stock`);
+        console.log(`Undefined: ${quoteType}Stock`);
         return 'Stock';
     }
   };
