@@ -42,19 +42,31 @@ export const getAssetBySymbol = async (symbol) => {
 };
 
 const getAssetType = (quote) => {
-    switch (quote.type) {
-        case 'EQUITY':
-            return 'Stock';
-        case 'CRYPTOCURRENCY':
-            return 'Crypto';
-        case 'ETF':
-            return 'ETF';
-        case 'MUTUALFUND':
-            return 'Mutual Fund';
-            default:
-            return 'Stock';
+    // 关键修改：使用 quote.quoteType 而非 quote.type
+    const quoteType = quote.quoteType || quote.type || '';
+    
+    switch (quoteType.toUpperCase()) { // 确保大写比较
+      case 'EQUITY':
+        return 'Stock';
+      case 'CRYPTOCURRENCY':
+        return 'Crypto';
+      case 'ETF':
+        return 'ETF';
+      case 'MUTUALFUND':
+        return 'Mutual Fund';
+      case 'INDEX':
+        return 'Index';
+      case 'FUTURE':
+        return 'Future';
+      case 'OPTION':
+        return 'Option';
+      case 'CURRENCY':
+        return 'Currency';
+      default:
+        console.log(`Undefined: ${quoteType}， defaulting to Stock`);
+        return 'Stock';
     }
-};
+  };
 
 
 export const deleteAsset = async (symbol) => {
