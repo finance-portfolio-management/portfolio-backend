@@ -22,4 +22,21 @@ export class PortfolioController {
             });
         }
     }
+
+    static async getAll(req, res) {
+        try{
+            const portfolios = await PortfolioService.getAllPortfolios();
+
+            res.status(200).json({
+                success: true,
+                count: portfolios.length,
+                data: portfolios
+            });
+        }catch (error){
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
 }
