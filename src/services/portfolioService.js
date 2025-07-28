@@ -14,4 +14,13 @@ export class PortfolioService {
 
         return portfolioId;
     }
+
+    static async getAllPortfolios() {
+        const portfolios = await PortfolioModel.findAll();
+
+        if (portfolios.length === 0){
+            return [];
+        }
+        return portfolios;
+    }
 }
