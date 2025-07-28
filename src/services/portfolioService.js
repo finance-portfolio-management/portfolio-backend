@@ -33,4 +33,25 @@ export class PortfolioService {
 
         return portfolio;
     }
+
+
+    static async updatePortfolio(portfolioId, { name, description }) {
+     
+        const portfolio = await PortfolioModel.findById(portfolioId);
+        if (!portfolio) {
+          throw new Error(`ID is${portfolioId} does not exist`);
+        }
+    
+
+        if (!name.trim()) {
+          throw new Error('combination name can not be empty');
+        }
+        if (name.length > 100) {
+          throw new Error('combination name can not exceed 100');
+        }
+    
+
+        await PortfolioModel.update(portfolioId, { name, description });
+        return true;
+      }
 }
