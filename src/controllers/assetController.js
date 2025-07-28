@@ -4,6 +4,7 @@ import { syncAssetInfo, getAllAssets, getAssetBySymbol, deleteAsset  as deleteAs
 updateAssetService, getAssetHistoricalData, syncAssetHistoricalData
 } from "../services/assetService.js";
 
+import { HistoricalModel } from '../models/historicalModel.js';
 
 
 export const addAsset = async (req, res) => {
@@ -110,29 +111,44 @@ export const updateAsset = async (req, res) => {
 
 }
 
+
 export const getHistoricalData = async (req, res) => {
-    try {
+    try{
         const { symbol } = req.params;
         const { start, end, interval } = req.query;
-        if(!start || !end) {
+        if (!start || !end) {
             return res.status(400).json({
                 success: false,
                 error: 'Start and end dates are required'
             });
         }
 
-        const data = await getAssetHistoricalData(symbol, start, end, interval);
-        res.json({
-            success: true,
-            data
-        });
+        let historicalData = await getAssetHistoricalData(symbol, start, end, interval);
+        if (!historicalData || historicalData.length ===0){
+            console.log(`No historical data found for ${symbol} between ${start} and ${end}`);
+            await syncAssetHistoricalData(symbol, new Date(start), new Date(end), interval);
+
+            historicalData = await getAssetHistoricalData(symbol, start, end, interval);    
+        }
+
+        if (historicalData && historicalData.length > 0) {
+            res.json({
+                success: true,
+                data: historicalData
+            });
+        }else {
+            res.status(404).json({
+                success: false,
+                error: `No historical data found for ${symbol} between ${start} and ${end}`
+            });
+        }
     } catch (error) {
-        res.status(400).json({
+        res.status(500).json({
             success: false,
-            error: error.message
+            error: error.message || 'Internal Server Error'
         });
     }
-};
+  };
 
 export const syncHistoricalData = async (req, res) => {
     try {
