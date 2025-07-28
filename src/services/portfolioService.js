@@ -23,4 +23,14 @@ export class PortfolioService {
         }
         return portfolios;
     }
+
+    static async getPortfolioById(portfolioId){
+        const portfolio = await PortfolioModel.findById(portfolioId);
+
+        if(!portfolio){
+            throw new Error('ID is${portfolioId} combination does not exist ');
+        }
+
+        return portfolio;
+    }
 }
