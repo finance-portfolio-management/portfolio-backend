@@ -124,10 +124,14 @@ export const syncAssetHistoricalData = async (symbol, startDate, endDate, interv
             throw new Error('asset ${symbol} not found');
         }
 
+        const vaidIntervals = ['1d', '1wk', '1mo'];
+        if (!vaidIntervals.includes(interval)) {
+            throw new Error(`Invalid interval ${interval}. Valid intervals are: ${vaidIntervals.join(', ')}`);
+        }
         const rawHistoricalData = await yahooFinance.historical(symbol, {
-            period1: startDate,
-            period2: endDate,
-            interval
+            period1: new Date(startDate),
+            period2: new Date(endDate),
+            interval: interval
         });
 
         if (!rawHistoricalData || rawHistoricalData.length === 0) {
@@ -144,19 +148,19 @@ export const syncAssetHistoricalData = async (symbol, startDate, endDate, interv
 };
 
 export const getAssetHistoricalData = async (symbol, startDate, endDate, interval = '1d') => {
-    try {
-        const asset = await AssetModel.getBySymbol(symbol);
-        if (!asset) {
-            throw new Error('Asset not found');
-        }
-        const historicalData = await HistoricalModel.getHistoricalData(asset.id, startDate, endDate, interval);
+   try {
+    const asset = await AssetModel.getBySymbol(symbol);
+    if (!asset) {
+        throw new Error(`Asset ${symbol} not found`);
+    }
 
-        if (historicalData.length === 0) {
-            throw new Error(`No historical data found for ${symbol} between ${startDate} and ${endDate}`);
-        }
-
-        return historicalData;
-    } catch (error) {
+    return await HistoricalModel.getHistoricalData(
+        asset.id,
+        startDate,
+        endDate,
+        interval
+    );
+   } catch (error) {
         console.error(`Error fetching historical data for ${symbol}:`, error);
         throw error;
     }
