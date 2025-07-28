@@ -63,4 +63,26 @@ export class PortfolioController {
             });
         }
     }
+
+    static async update(req, res) {
+        try {
+          const { portfolioId } = req.params;
+          const { name, description } = req.body;
+    
+
+          await PortfolioService.updatePortfolio(portfolioId, { name, description });
+
+          const updatedPortfolio = await PortfolioService.getPortfolioById(portfolioId);
+          res.json({
+            success: true,
+            message: 'combination update success',
+            data: updatedPortfolio
+          });
+        } catch (error) {
+          if (error.message.includes('not exist')) {
+            return res.status(404).json({ success: false, error: error.message });
+          }
+          res.status(400).json({ success: false, error: error.message });
+        }
+      }
 }

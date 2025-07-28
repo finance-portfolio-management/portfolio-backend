@@ -46,4 +46,14 @@ static async findById(portfolioId) {
 
     return { ...portfolio[0], assets };
   }
+
+  static async update(portfolioId, { name, description }) {
+    const sql = `
+      UPDATE portfolios 
+      SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = ?
+    `;
+    await db.execute(sql, [name, description, portfolioId]);
+    return true;
+  }
 }
