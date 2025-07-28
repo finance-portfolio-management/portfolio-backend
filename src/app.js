@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 
 
 import assetsRoutes from './routes/assetRoutes.js';
+import marketRoutes from './routes/marketRoutes.js';
 
 
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(express.json());
 
 
 app.use('/api/assets', assetsRoutes);
+app.use('/api/market', marketRoutes);
 
 app.get('/', (req, res) => {
    res.json({
