@@ -28,6 +28,92 @@ const options = {
       },
       // 将以下内容添加到这里
       schemas: {
+
+        
+        Asset: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '123e4567-e89b-12d3-a456-426614174000',
+            },
+            symbol: {
+              type: 'string',
+              example: 'AAPL',
+            },
+            name: {
+              type: 'string',
+              example: 'Apple Inc.',
+            },
+            type: {
+              type: 'string',
+              enum: ['stock', 'crypto', 'etf'],
+              example: 'stock',
+            },
+            exchange: {
+              type: 'string',
+              example: 'NASDAQ',
+            },
+            current_price: {
+              type: 'number',
+              format: 'float',
+              example: 175.62,
+            },
+            price_updated_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2023-08-20T14:30:00Z',
+            },
+          },
+        },
+        HistoricalData: {
+          type: 'object',
+          properties: {
+            date: {
+              type: 'string',
+              format: 'date',
+              example: '2023-01-03'
+            },
+            open: {
+              type: 'number',
+              format: 'float',
+              example: 130.28
+            },
+            high: {
+              type: 'number',
+              format: 'float',
+              example: 130.90
+            },
+            low: {
+              type: 'number',
+              format: 'float',
+              example: 124.17
+            },
+            close: {
+              type: 'number',
+              format: 'float',
+              example: 125.07
+            },
+            volume: {
+              type: 'integer',
+              example: 112117500
+            }
+          }
+        },
+        Error: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: false,
+            },
+            error: {
+              type: 'string',
+              example: 'Symbol is required',
+            },
+          },
+        },
+        
         // 资产创建请求体
         AssetCreate: {
           type: "object",
@@ -117,6 +203,7 @@ const options = {
             },
           },
         },
+        
       },
     },
   },
