@@ -3,9 +3,11 @@ import { addAsset, listAssets, getAsset, deleteAsset, updateAsset} from '../cont
 
 import { getHistoricalData, syncHistoricalData } from '../controllers/assetController.js';
 
+
 import express from "express";
 
 const router = express.Router();
+
 /**
  * @swagger
  * tags:
@@ -132,7 +134,6 @@ router.get('/:symbol', getAsset);
  *         description: 资产不存在
  */
 router.delete('/:symbol', deleteAsset);
-
 /**
  * @swagger
  * /api/assets/{symbol}:
@@ -263,6 +264,4 @@ router.get('/:symbol/historical', getHistoricalData);
  *         description: 资产不存在
  */
 router.post('/:symbol/historical/sync', syncHistoricalData);
-
-
 export default router;
