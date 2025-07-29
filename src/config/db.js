@@ -13,6 +13,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
+// console.log('DB_USER:', process.env.DB_USER); // 打印特定变量
 
 async function getConnection() {
     try {
