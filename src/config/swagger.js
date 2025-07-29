@@ -114,6 +114,7 @@ const options = {
           },
         },
         
+
         // 资产创建请求体
         AssetCreate: {
           type: "object",
@@ -203,7 +204,7 @@ const options = {
             },
           },
         },
-        
+
       },
     },
   },

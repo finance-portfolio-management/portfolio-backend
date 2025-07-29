@@ -67,6 +67,7 @@ const router = express.Router();
  *             example:
  *               success: false
  *               error: 'Failed to fetch data from Yahoo Finance'
+
  */
 router.post('/', addAsset);
 /**
