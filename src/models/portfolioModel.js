@@ -56,4 +56,12 @@ static async findById(portfolioId) {
     await db.execute(sql, [name, description, portfolioId]);
     return true;
   }
+
+  static async delete(portfolioId){
+    const sql = `
+    delete from portfolios where id = ?
+    `;
+    await db.execute(sql, [portfolioId]);
+    return true
+  }
 }

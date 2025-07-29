@@ -11,4 +11,6 @@ router.get('/portfolios/:portfolioId', PortfolioController.getById);
 
 router.put('/portfolios/:portfolioId', PortfolioController.update);
 
+router.delete('/portfolios/:portfolioId', PortfolioController.delete);
+
 export default router;

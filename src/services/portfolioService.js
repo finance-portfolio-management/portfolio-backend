@@ -54,4 +54,13 @@ export class PortfolioService {
         await PortfolioModel.update(portfolioId, { name, description });
         return true;
       }
+
+      static async deletePortfolio(portfolioId){
+        const portfolio = await PortfolioModel.findById(portfolioId);
+        if(!portfolio){
+            throw new Error('ID is ${portfolioId} does not exist');
+        }
+        await PortfolioModel.delete(portfolioId);
+        return true;
+      }
 }
