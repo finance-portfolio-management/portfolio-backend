@@ -85,4 +85,27 @@ export class PortfolioController {
           res.status(400).json({ success: false, error: error.message });
         }
       }
+
+    static async delete(req, res){
+        try{
+            const { portfolioId } = req.params;
+            await PortfolioService.deletePortfolio(portfolioId);
+
+            res.json({
+                success: true,
+                message: 'ID is ${portfolioId}$ combination has beem deleted'
+            });
+        } catch (error){
+            if (error.message.includes('not exist')){
+                return res.status(404).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
 }
