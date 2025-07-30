@@ -1,239 +1,175 @@
-import { PortfolioModel } from "../models/portfolioModel.js";
-import { PortfolioTransactionModel } from "../models/portfolioTransactionModel.js";
-import db from "../config/db.js"
+import { TransactionModel } from "../models/portfolioModel.js";
 
-export class PortfolioService {
+export class AssetService {
+  /**
+   * 买入股票（自动使用当天价格）
+   */
+  static async buyAsset(symbol, name, quantity, tradeDate) {
+    if (quantity <= 0) throw new Error('买入数量必须为正数');
+    // 直接调用模型层，无需传price（模型会自动获取当天价格）
+    return await TransactionModel.create(symbol, name, quantity, tradeDate);
+  }
 
-    static async createPortfolio(name, description = ''){
-        if (!name || name.trim() === ''){
-            throw new Error('the combination cannot be empty');
-        }
-        if (name.length > 100){
-            throw new Error('the combination name cannot exceed 100');
-        }
+  /**
+   * 卖出股票（自动使用当天价格，校验持仓）
+   */
+  static async sellAsset(symbol, name, quantity, tradeDate) {
+    if (quantity <= 0) throw new Error('卖出数量必须为正数');
+    // 1. 先查询当前持仓（目标日期前的总数量）
+    const allTransactions = await TransactionModel.getAllBeforeDate(tradeDate);
+    const symbolTransactions = allTransactions.filter(tx => tx.symbol === symbol);
+    const totalHolding = symbolTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
 
-        const portfolioId = await PortfolioModel.create(name, description);
-
-        return portfolioId;
+    if (totalHolding < quantity) {
+      throw new Error(`持仓不足，${symbol}当前持仓: ${totalHolding.toFixed(4)}, 尝试卖出: ${quantity}`);
     }
 
-    static async getAllPortfolios() {
-        const portfolios = await PortfolioModel.findAll();
+    // 2. 创建卖出记录（quantity为负数，自动使用当天价格）
+    return await TransactionModel.create(symbol, name, -quantity, tradeDate);
+  }
 
-        if (portfolios.length === 0){
-            return [];
-        }
-        return portfolios;
-    }
-
-    static async getPortfolioById(portfolioId){
-        const portfolio = await PortfolioModel.findById(portfolioId);
-
-        if(!portfolio){
-            throw new Error('ID is${portfolioId} combination does not exist ');
-        }
-
-        return portfolio;
-    }
-
-
-    static async updatePortfolio(portfolioId, { name, description }) {
-     
-        const portfolio = await PortfolioModel.findById(portfolioId);
-        if (!portfolio) {
-          throw new Error(`ID is${portfolioId} does not exist`);
-        }
-    
-
-        if (!name.trim()) {
-          throw new Error('combination name can not be empty');
-        }
-        if (name.length > 100) {
-          throw new Error('combination name can not exceed 100');
-        }
-    
-
-        await PortfolioModel.update(portfolioId, { name, description });
-        return true;
-      }
-
-      static async deletePortfolio(portfolioId){
-        const portfolio = await PortfolioModel.findById(portfolioId);
-        if(!portfolio){
-            throw new Error('ID is ${portfolioId} does not exist');
-        }
-        await PortfolioModel.delete(portfolioId);
-        return true;
-      }
-
-     
-
-
-
-      static async getAssetStatus(portfolioId, targetDate) {
-        const portfolio = await PortfolioModel.get(portfolioId);
-        if (!portfolio) throw new Error(`combination ${portfolioId} not exist`);
-    
-        // 2. 获取截止目标日期的所有交易
-        const transactions = await PortfolioTransactionModel.getByDate(portfolioId, targetDate);
-        if (transactions.length === 0) {
-          return {
-            portfolioId,
-            portfolioName: portfolio.name,
-            targetDate,
-            holdings: [],
-            totalRealizedProfit: '0.00',
-            totalAsset: '0.00'
-          };
-        }
-    
-       
-        const assetMap = new Map(); 
-        transactions.forEach(tx => {
-          const key = tx.asset_id;
-          if (!assetMap.has(key)) {
-            assetMap.set(key, {
-              symbol: tx.symbol,
-              name: tx.name,
-              type: tx.asset_type,
-              transactions: [],
-              totalQuantity: 0, 
-              totalCost: 0,     
-              realizedProfit: 0, 
-              totalSellQuantity: 0, 
-              totalSellAmount: 0 
-            });
-          }
-          assetMap.get(key).transactions.push(tx);
-        });
-    
-        assetMap.forEach(asset => {
-          const { transactions } = asset;
-          let remainingQuantity = 0;
-          let remainingCost = 0;
-          const fifoQueue = [];
-    
-          transactions.forEach(tx => {
-            const { quantity, price } = tx;
-    
-            if (quantity > 0) { 
-              remainingQuantity += quantity;
-              remainingCost += quantity * price;
-              fifoQueue.push({ quantity, price });
-            } else { 
-              const sellQty = -quantity;
-              const sellAmount = sellQty * price; 
-              let remainingSellQty = sellQty;
-    
-            
-              asset.totalSellQuantity += sellQty;
-              asset.totalSellAmount += sellAmount;
-    
-             
-              while (remainingSellQty > 0 && fifoQueue.length > 0) {
-                const first = fifoQueue[0];
-                if (first.quantity <= remainingSellQty) {
-                  asset.realizedProfit += (price - first.price) * first.quantity;
-                  remainingQuantity -= first.quantity;
-                  remainingCost -= first.quantity * first.price;
-                  remainingSellQty -= first.quantity;
-                  fifoQueue.shift();
-                } else {
-                  asset.realizedProfit += (price - first.price) * remainingSellQty;
-                  remainingQuantity -= remainingSellQty;
-                  remainingCost -= remainingSellQty * first.price;
-                  first.quantity -= remainingSellQty;
-                  remainingSellQty = 0;
-                }
-              }
-            }
-          });
-    
-          asset.avgCost = remainingQuantity > 0 ? remainingCost / remainingQuantity : 0;
-          asset.totalQuantity = remainingQuantity;
-          asset.totalCost = remainingCost;
-        });
-    
-       
-        const assets = Array.from(assetMap.values());
-        let priceMap = new Map();
-    
-        if (assets.length > 0) {
-          const assetIds = assets.map(a => a.transactions[0].asset_id);
-          const [prices] = await db.execute(`
-            SELECT h.asset_id, h.close AS price 
-            FROM historical_data h
-            JOIN (
-              SELECT asset_id, MAX(date_time) AS max_date
-              FROM historical_data
-              WHERE asset_id IN (${assetIds.map(() => '?').join(',')})
-                AND date_time <= ?
-              GROUP BY asset_id
-            ) sub ON h.asset_id = sub.asset_id AND h.date_time = sub.max_date
-          `, [...assetIds, `${targetDate} 23:59:59`]);
-    
-          priceMap = new Map(prices.map(p => [p.asset_id, p.price]));
-        }
-    
-        let totalAsset = 0;
-        let totalRealizedProfit = 0;
-    
-        
-        const holdings = assets.map(asset => {
-          const assetId = asset.transactions[0].asset_id;
-          
-        
-          let latestPrice = priceMap.get(assetId);
-          if (typeof latestPrice !== 'number' || isNaN(latestPrice)) {
-            latestPrice = asset.avgCost;
-          }
-          if (typeof latestPrice !== 'number' || isNaN(latestPrice)) {
-            latestPrice = 0;
-          }
-    
-          
-          const marketValue = asset.totalQuantity * latestPrice;
-          const unrealizedProfit = marketValue - asset.totalCost;
-          const profitRate = asset.totalCost > 0 
-            ? (unrealizedProfit / asset.totalCost) * 100 
-            : 0;
-    
-         
-          const realizedCost = asset.totalSellAmount - asset.realizedProfit; 
-          const realizedProfitRate = realizedCost > 0 
-            ? (asset.realizedProfit / realizedCost) * 100 
-            : 0;
-    
-        
-          totalAsset += marketValue;
-          totalRealizedProfit += asset.realizedProfit;
-    
-          return {
-            symbol: asset.symbol,
-            name: asset.name,
-            quantity: asset.totalQuantity.toFixed(2),
-            avgCost: asset.avgCost.toFixed(2),
-            latestPrice: latestPrice.toFixed(2),
-            marketValue: marketValue.toFixed(2),
-            unrealizedProfit: unrealizedProfit.toFixed(2),
-            realizedProfit: asset.realizedProfit.toFixed(2),
-          
-            realizedProfitRate: realizedProfitRate.toFixed(2) + '%', 
-           
-            profitRate: profitRate.toFixed(2) + '%'
-          };
-        });
-    
-    
-        totalAsset += totalRealizedProfit;
-    
-        return {
-          portfolioId,
-          portfolioName: portfolio.name,
-          targetDate,
-          holdings,
-          totalRealizedProfit: totalRealizedProfit.toFixed(2),
-          totalAsset: totalAsset.toFixed(2)
+  /**
+   * 查询目标日期的持仓（自动读取当天价格）
+   */
+  static async getAllHoldings(targetDate) {
+    try {
+      // 1. 获取目标日期前的所有交易
+      const allTransactions = await TransactionModel.getAllBeforeDate(targetDate);
+      
+      // 没有交易记录时直接返回空持仓
+      if (allTransactions.length === 0) {
+        return { 
+          targetDate, 
+          holdings: [], 
+          totalMarketValue: '0.00', 
+          totalRealizedProfit: '0.00', 
+          totalAsset: '0.00' 
         };
       }
+  
+      // 2. 使用 DailyPrices 模型获取目标日期的所有股票价格
+      const priceMap = await TransactionModel.getPricesByDate(targetDate);
+      
+      // 检查是否有价格数据
+      if (!priceMap || Object.keys(priceMap).length === 0) {
+        throw new Error(`No price data available for ${targetDate}`);
+      }
+  
+      // 3. 按股票分组计算持仓
+      const symbolMap = new Map();
+      allTransactions.forEach(tx => {
+        if (!symbolMap.has(tx.symbol)) symbolMap.set(tx.symbol, []);
+        symbolMap.get(tx.symbol).push(tx);
+      });
+  
+      const holdings = [];
+      let totalMarketValue = 0;
+      let totalRealizedProfit = 0;
+  
+      symbolMap.forEach((transactions, symbol) => {
+        const latestPrice = priceMap[symbol];
+        
+        // 跳过没有价格的资产（而不是抛出错误）
+        if (!latestPrice) {
+          console.warn(`Symbol ${symbol} has no price data on ${targetDate}`);
+          return;
+        }
+  
+        // 计算持仓和收益（FIFO逻辑）
+        const { quantity, avgCost, marketValue, unrealizedProfit, realizedProfit } = 
+          this.calculateSingleHolding(transactions, latestPrice);
+  
+        // 只添加有持仓的资产
+        if (quantity <= 0) return;
+  
+        totalMarketValue += marketValue;
+        totalRealizedProfit += realizedProfit;
+  
+        holdings.push({
+          symbol,
+          name: transactions[0].name,
+          quantity:Number(quantity).toFixed(4),
+          avgCost: avgCost.toFixed(4),
+          latestPrice: Number(latestPrice).toFixed(4),
+          marketValue: marketValue.toFixed(4),
+          unrealizedProfit: unrealizedProfit.toFixed(4),
+          realizedProfit: realizedProfit.toFixed(4),
+          profitRate: avgCost > 0 ? `${((unrealizedProfit / avgCost) * 100).toFixed(2)}%` : '0.00%',
+          holdingPercentage: '0.00%'
+        });
+      });
+  
+      // 计算持仓占比
+      if (totalMarketValue > 0) {
+        holdings.forEach(item => {
+          item.holdingPercentage = ((parseFloat(item.marketValue) / totalMarketValue) * 100).toFixed(2) + '%';
+        });
+      }
+  
+      return {
+        targetDate,
+        holdings,
+        totalMarketValue: totalMarketValue.toFixed(4),
+        totalRealizedProfit: totalRealizedProfit.toFixed(4),
+        totalAsset: (totalMarketValue + totalRealizedProfit).toFixed(4)
+      };
+    } catch (error) {
+      console.error('Error in getAllHoldings:', error);
+      throw new Error('Failed to retrieve holdings: ' + error.message);
     }
+  }
+  
+  /**
+   * 辅助方法：FIFO计算单个股票持仓（改进精度处理）
+   */
+  static calculateSingleHolding(transactions, latestPrice) {
+    let totalQuantity = 0;
+    let totalCost = 0;
+    let realizedProfit = 0;
+    const fifoQueue = [];
+  
+    transactions.forEach(tx => {
+      const { quantity, trade_price: price } = tx;
+      
+      // 买入操作
+      if (quantity > 0) {
+        totalQuantity += quantity;
+        totalCost += quantity * price;
+        fifoQueue.push({ quantity, price });
+      } 
+      // 卖出操作
+      else {
+        const sellQty = -quantity;
+        let remainingSellQty = sellQty;
+        
+        // 按FIFO原则处理卖出
+        while (remainingSellQty > 0 && fifoQueue.length > 0) {
+          const firstBuy = fifoQueue[0];
+          
+          // 如果最早买入的数量小于等于要卖出的数量
+          if (firstBuy.quantity <= remainingSellQty) {
+            realizedProfit += (price - firstBuy.price) * firstBuy.quantity;
+            totalQuantity -= firstBuy.quantity;
+            totalCost -= firstBuy.quantity * firstBuy.price;
+            remainingSellQty -= firstBuy.quantity;
+            fifoQueue.shift(); // 移除已处理的买入记录
+          } 
+          // 如果最早买入的数量大于要卖出的数量
+          else {
+            realizedProfit += (price - firstBuy.price) * remainingSellQty;
+            totalQuantity -= remainingSellQty;
+            totalCost -= remainingSellQty * firstBuy.price;
+            firstBuy.quantity -= remainingSellQty;
+            remainingSellQty = 0;
+          }
+        }
+      }
+    });
+  
+    const avgCost = totalQuantity > 0 ? totalCost / totalQuantity : 0;
+    const marketValue = totalQuantity * latestPrice;
+    const unrealizedProfit = marketValue - totalCost;
+  
+    return { quantity: totalQuantity, avgCost, marketValue, unrealizedProfit, realizedProfit };
+  }
+}
