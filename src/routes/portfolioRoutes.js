@@ -13,4 +13,10 @@ router.put('/portfolios/:portfolioId', PortfolioController.update);
 
 router.delete('/portfolios/:portfolioId', PortfolioController.delete);
 
+router.post('/portfolios/:portfolioId/buy', PortfolioController.buyAsset);
+
+router.post('/portfolios/:portfolioId/sell', PortfolioController.sellAsset);
+
+router.get('/portfolios/:portfolioId/status', PortfolioController.getAssetStatus);
+
 export default router;
