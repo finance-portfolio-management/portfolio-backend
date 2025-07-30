@@ -39,7 +39,7 @@ static async findById(portfolioId) {
         a.symbol,
         a.name AS asset_name
       FROM portfolio_assets pa
-      LEFT JOIN assets a ON pa.asset_id = a.id  -- 确保关联条件正确
+      LEFT JOIN assets a ON pa.asset_id = a.id 
       WHERE pa.portfolio_id = ?
     `, [portfolioId]);
   
@@ -64,4 +64,15 @@ static async findById(portfolioId) {
     await db.execute(sql, [portfolioId]);
     return true
   }
+
+  static async get(portfolioId){
+    const [rows] = await db.execute(
+        `
+        select id from portfolios where id = ?
+        `,
+        [portfolioId]
+    );
+    return rows.length > 0;
+  }
 }
+

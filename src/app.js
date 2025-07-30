@@ -7,7 +7,7 @@ import specs from './config/swagger.js';
 import assetsRoutes from './routes/assetRoutes.js';
 import marketRoutes from './routes/marketRoutes.js';
 import portfolioRoutes from './routes/portfolioRoutes.js';
-import portfolioAssetRoutes from './routes/portfolioAssetRoutes.js';
+
 
 
 dotenv.config();
@@ -22,7 +22,7 @@ app.use(express.json());
 app.use('/api/assets', assetsRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api', portfolioRoutes);
-app.use('/api', portfolioAssetRoutes);
+
 
 app.get('/', (req, res) => {
    res.json({
