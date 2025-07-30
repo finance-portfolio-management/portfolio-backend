@@ -10,14 +10,14 @@ const router = express.Router();
  * @swagger
  * tags:
  *   name: Assets
- *   description: 资产（股票/基金/债券等）管理接口
+ *   description: Assets (Stocks/Funds/Bonds, etc.) Management API
  */
 /**
  * @swagger
  * /api/assets:
  *   post:
- *     summary: 添加新资产
- *     description: 通过股票/加密货币代码从Yahoo Finance同步资产信息并保存
+ *     summary: Search asset by symbol
+ *     description: Synchronize asset information from Yahoo Finance using the stock/crypto asset symbol
  *     tags: [Assets]
  *     requestBody:
  *       required: true
@@ -34,7 +34,8 @@ const router = express.Router();
  *                 description: '资产代码 (如股票代码/加密货币符号)'
  *     responses:
  *       201:
- *         description: 资产添加成功
+ *         description: Successfully searched asset
+ *         headers:
  *         content:
  *           application/json:
  *             schema:
@@ -50,7 +51,7 @@ const router = express.Router();
  *                   current_price: 175.62
  *                   price_updated_at: '2023-08-20T14:30:00Z'
  *       400:
- *         description: 参数错误
+ *         description: Parameter Error
  *         content:
  *           application/json:
  *             schema:
@@ -59,7 +60,7 @@ const router = express.Router();
  *               success: false
  *               error: 'Symbol is required'
  *       500:
- *         description: 服务器错误
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:
@@ -316,8 +317,8 @@ router.put('/:symbol', updateAsset);
  * @swagger
  * /api/assets/{symbol}/historical:
  *   get:
- *     summary: 获取资产历史数据
- *     description: 获取指定资产在特定时间范围内的历史价格数据，如果本地不存在会自动从Yahoo Finance同步
+ *     summary: Retrieve historical asset data
+ *     description: Retrieves historical price data of a specified asset within a specific time range
  *     tags: [Assets]
  *     parameters:
  *       - in: path
@@ -326,7 +327,7 @@ router.put('/:symbol', updateAsset);
  *         schema:
  *           type: string
  *         example: 'AAPL'
- *         description: 资产代码 (如股票代码/加密货币符号)
+ *         description: Asset symbol
  *       - in: query
  *         name: start
  *         required: true
@@ -334,7 +335,7 @@ router.put('/:symbol', updateAsset);
  *           type: string
  *           format: date
  *         example: '2023-01-01'
- *         description: 开始日期 (YYYY-MM-DD)
+ *         description: Start date (YYYY-MM-DD)
  *       - in: query
  *         name: end
  *         required: true
@@ -342,7 +343,7 @@ router.put('/:symbol', updateAsset);
  *           type: string
  *           format: date
  *         example: '2023-12-31'
- *         description: 结束日期 (YYYY-MM-DD)
+ *         description: End date (YYYY-MM-DD)
  *       - in: query
  *         name: interval
  *         schema:
@@ -350,10 +351,10 @@ router.put('/:symbol', updateAsset);
  *           enum: ['1d', '1wk', '1mo']
  *         default: '1d'
  *         example: '1d'
- *         description: 数据间隔 (1d-日线, 1wk-周线, 1mo-月线)
+ *         description: Data interval (1d, 1wk, 1mo)
  *     responses:
  *       200:
- *         description: 成功获取历史数据
+ *         description: Successfully retrieved historical data
  *         content:
  *           application/json:
  *             schema:
@@ -382,7 +383,7 @@ router.put('/:symbol', updateAsset);
  *                   close: 126.36
  *                   volume: 89113600
  *       400:
- *         description: 参数错误
+ *         description: Parameter Error
  *         content:
  *           application/json:
  *             schema:
@@ -391,7 +392,7 @@ router.put('/:symbol', updateAsset);
  *               success: false
  *               error: 'Start and end dates are required'
  *       404:
- *         description: 未找到历史数据
+ *         description: Cannot find historical data for the specified asset
  *         content:
  *           application/json:
  *             schema:
@@ -400,7 +401,7 @@ router.put('/:symbol', updateAsset);
  *               success: false
  *               error: 'No historical data found for AAPL between 2023-01-01 and 2023-12-31'
  *       500:
- *         description: 服务器错误
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:

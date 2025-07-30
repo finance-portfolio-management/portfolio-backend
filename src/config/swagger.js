@@ -8,14 +8,14 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "投资组合管理系统 API",
+      title: "Personal Finance Management System API Documentation",
       version: "1.0.0",
-      description: "基于 Node.js 的资产、市场、投资组合管理接口",
+      description: " ",
     },
     servers: [
       {
         url: "http://localhost:3000",
-        description: "本地开发环境",
+        description: "Local Development Environment",
       },
     ],
     components: {
