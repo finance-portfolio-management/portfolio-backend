@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-
+import swaggerUi from 'swagger-ui-express'; 
+import specs from './config/swagger.js'; 
 
 import assetsRoutes from './routes/assetRoutes.js';
 import marketRoutes from './routes/marketRoutes.js';
@@ -12,7 +13,7 @@ import portfolioAssetRoutes from './routes/portfolioAssetRoutes.js';
 dotenv.config();
 
 const app = express();
-
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(cors());
 app.use(express.json());
