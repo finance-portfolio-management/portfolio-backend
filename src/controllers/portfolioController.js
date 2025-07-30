@@ -1,4 +1,6 @@
 import { PortfolioService } from "../services/portfolioService.js";
+import { PortfolioTransactionModel } from "../models/portfolioTransactionModel.js";
+import db from '../config/db.js'
 
 export class PortfolioController {
     static async create(req, res){
@@ -108,4 +110,67 @@ export class PortfolioController {
             });
         }
     }
+
+
+
+  
+    static async buyAsset(req, res) {
+        try {
+        const { portfolioId } = req.params;
+        const { symbol, quantity, price, dateTime } = req.body;
+        const assetId = await getAssetIdBySymbol(symbol); 
+
+        await PortfolioTransactionModel.record({
+            portfolioId,
+            assetId,
+            type: 'buy',
+            quantity,
+            price,
+            dateTime: dateTime || new Date()
+        });
+
+        res.status(201).json({ success: true, message: 'buy sueccessfully' });
+        } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+        }
+    }
+
+   
+    static async sellAsset(req, res) {
+        try {
+        const { portfolioId } = req.params;
+        const { symbol, quantity, price, dateTime } = req.body;
+        const assetId = await getAssetIdBySymbol(symbol);
+
+        await PortfolioTransactionModel.record({
+            portfolioId,
+            assetId,
+            type: 'sell',
+            quantity,
+            price,
+            dateTime: dateTime || new Date()
+        });
+
+        res.json({ success: true, message: 'sell successfully' });
+        } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+        }
+    }
+
+   
+    static async getAssetStatus(req, res) {
+        try {
+        const { portfolioId } = req.params;
+        const { targetDate } = req.query;
+        const result = await PortfolioService.getAssetStatus(portfolioId, targetDate);
+        res.json({ success: true, data: result });
+        } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+        }
+    }
+    }
+    async function getAssetIdBySymbol(symbol) {
+    const [rows] = await db.execute('SELECT id FROM assets WHERE symbol = ?', [symbol]);
+    if (rows.length === 0) throw new Error(`asset ${symbol} not exist`);
+    return rows[0].id;
 }
