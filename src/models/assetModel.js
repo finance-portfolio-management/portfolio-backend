@@ -47,6 +47,5 @@ export class AssetModel {
         );
     }
 
-
     
 }

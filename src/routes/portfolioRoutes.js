@@ -1,22 +1,16 @@
 import express from 'express';
-import { PortfolioController } from '../controllers/portfolioController.js';
+
+import { AssetController } from '../controllers/portfolioController.js';
 
 const router = express.Router();
 
-router.post('/portfolios', PortfolioController.create);
+// 买入资产
+router.post('/buy', AssetController.buy);
 
-router.get('/portfolios', PortfolioController.getAll);
+// 卖出资产
+router.post('/sell', AssetController.sell);
 
-router.get('/portfolios/:portfolioId', PortfolioController.getById);
-
-router.put('/portfolios/:portfolioId', PortfolioController.update);
-
-router.delete('/portfolios/:portfolioId', PortfolioController.delete);
-
-router.post('/portfolios/:portfolioId/buy', PortfolioController.buyAsset);
-
-router.post('/portfolios/:portfolioId/sell', PortfolioController.sellAsset);
-
-router.get('/portfolios/:portfolioId/status', PortfolioController.getAssetStatus);
+// 查询持仓
+router.get('/holdings', AssetController.getHoldings);
 
 export default router;
