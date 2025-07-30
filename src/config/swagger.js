@@ -8,14 +8,14 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "投资组合管理系统 API",
+      title: "Personal Finance Management System API Documentation",
       version: "1.0.0",
-      description: "基于 Node.js 的资产、市场、投资组合管理接口",
+      description: " ",
     },
     servers: [
       {
         url: "http://localhost:3000",
-        description: "本地开发环境",
+        description: "Local Development Environment",
       },
     ],
     components: {
@@ -114,6 +114,121 @@ const options = {
           },
         },
         
+        // 单个涨跌股票项
+      TopGainerLoserItem: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'number',
+            description: '股票唯一ID',
+            example: 1,
+          },
+          symbol: {
+            type: 'string',
+            description: '股票代码（含交易所后缀）',
+            example: 'AAPL',
+          },
+          name: {
+            type: 'string',
+            description: '股票名称',
+            example: 'Apple Inc.',
+          },
+          currentPrice: {
+            type: 'string',
+            description: '当前价格（美元/人民币等，保留2位小数）',
+            example: '192.45',
+          },
+          growthRate: {
+            type: 'string',
+            description: '涨跌幅（百分比，保留2位小数，正数为涨，负数为跌）',
+            example: '2.35',  // 涨幅2.35%
+            // 若允许负数示例可写：'-1.20'（跌幅1.20%）
+          },
+        },
+        required: ['id', 'symbol', 'name', 'currentPrice', 'growthRate'],
+      },
+
+      // 涨跌榜响应结构
+      TopGainersLosersResponse: {
+        type: 'object',
+        properties: {
+          success: {
+            type: 'boolean',
+            description: '请求是否成功',
+            example: true,
+          },
+          data: {
+            type: 'object',
+            properties: {
+              topGainers: {
+                type: 'array',
+                description: '前5名涨幅股票列表',
+                items: {
+                  $ref: '#/components/schemas/TopGainerLoserItem',
+                },
+                example: [  // 示例数据（实际根据接口返回调整）
+                  {
+                    id: 1,
+                    symbol: 'AAPL',
+                    name: 'Apple Inc.',
+                    currentPrice: '192.45',
+                    growthRate: '2.35',
+                  },
+                  {
+                    id: 2,
+                    symbol: 'MSFT',
+                    name: 'Microsoft Corporation',
+                    currentPrice: '340.67',
+                    growthRate: '1.89',
+                  },
+                ],
+              },
+              topLosers: {
+                type: 'array',
+                description: '前5名跌幅股票列表',
+                items: {
+                  $ref: '#/components/schemas/TopGainerLoserItem',
+                },
+                example: [  // 示例数据（实际根据接口返回调整）
+                  {
+                    id: 10,
+                    symbol: 'SHEL',
+                    name: 'Shell plc',
+                    currentPrice: '85.20',
+                    growthRate: '-0.93',
+                  },
+                  {
+                    id: 7,
+                    symbol: '600519.SS',
+                    name: 'guizhou Moutai',
+                    currentPrice: '1680.00',
+                    growthRate: '-0.71',
+                  },
+                ],
+              },
+            },
+            required: ['topGainers', 'topLosers'],
+          },
+        },
+        required: ['success', 'data'],
+      },
+
+      // 错误响应结构
+      ErrorResponse: {
+        type: 'object',
+        properties: {
+          success: {
+            type: 'boolean',
+            example: false,
+          },
+          error: {
+            type: 'string',
+            description: '错误信息',
+            example: 'Internal Server Error',
+          },
+        },
+        required: ['success', 'error'],
+      },
 
         // 资产创建请求体
         AssetCreate: {
@@ -213,6 +328,7 @@ const options = {
   apis: [
     path.join(__dirname, '../routes/*.js'),  // 使用绝对路径
     path.join(__dirname, '../routes/assetRoutes.js') // 明确指定文件
+    , path.join(__dirname, '../routes/marketRoutes.js')
   ]
 };
 
