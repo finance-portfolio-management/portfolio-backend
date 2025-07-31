@@ -39,7 +39,7 @@ export class TransactionModel {
       `SELECT t.*, dp.price AS trade_price 
        FROM transactions t
        JOIN daily_prices dp ON t.symbol = dp.symbol AND t.trade_date = dp.date
-       WHERE t.trade_date <= ?
+       WHERE t.trade_date = ?
        ORDER BY t.symbol, t.trade_date ASC`,
       [targetDate]
     );
